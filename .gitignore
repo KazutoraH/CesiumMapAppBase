@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+
+# 環境ファイル
+.env
+.env.*
+
+# Docker
+#*.log
+*.pid
+*.db
+
+*.lnk
+volume_data/

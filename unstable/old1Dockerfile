@@ -1,0 +1,68 @@
+FROM python:3.13.2-slim
+
+# 必要なシステムパッケージをインストール
+RUN apt-get update && apt-get install -y \
+    lsb-release \
+    curl \
+    build-essential \
+    cmake \
+    gcc \
+    g++ \
+    git \
+    make \
+    libgeos-dev \
+    libproj-dev \
+    libgdal-dev \
+    gdal-bin \
+    libglib2.0-0 \
+    libspatialindex-dev \
+    libboost-all-dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# GDALを最新バージョンにアップデート
+RUN apt-get install -y libgdal-dev
+
+# 作業ディレクトリを設定
+WORKDIR /app
+
+# GitHubから `cesium-terrain-builder` をクローン
+RUN git clone https://github.com/geo-data/cesium-terrain-builder.git /app/cesium-terrain-builder
+
+# pipとセットアップツールのアップグレード
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# NumPy を先にインストール
+RUN pip install --no-cache-dir numpy
+
+# 残りの依存パッケージをインストール
+COPY requirements_unstable.txt . 
+RUN pip install --no-cache-dir -r requirements_unstable.txt
+
+# cesium-terrain-builder のビルドとインストール
+RUN BUILD_LOG=/tmp/ctb_build.log && \
+    echo "=== Starting CTB build at $(date) ===" | tee $BUILD_LOG && \
+    cd /app/cesium-terrain-builder && \
+    mkdir build && \
+    cd build && \
+    cmake .. 2>&1 | tee -a $BUILD_LOG && \
+    make -j"$(nproc)" 2>&1 | tee -a $BUILD_LOG && \
+    make install 2>&1 | tee -a $BUILD_LOG && \
+    echo "=== CTB build complete ===" | tee -a $BUILD_LOG && \
+    rm -rf /tmp/ctb
+
+# cesium-terrain-builderをpipでインストール
+RUN cd /app/cesium-terrain-builder && pip install .
+
+# モジュール確認
+RUN python -c "import cesium_terrain_builder; print(cesium_terrain_builder)"
+
+# アプリケーションコードをコピー
+COPY geoapp /app/geoapp
+COPY run.py /app/run.py
+
+# Flask 環境変数の設定
+ENV FLASK_APP=run.py
+ENV PYTHONPATH=/app/cesium-terrain-builder:$PYTHONPATH
+
+# コンテナ起動時のコマンド
+CMD ["flask", "run", "--host=0.0.0.0"]

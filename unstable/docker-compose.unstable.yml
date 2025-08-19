@@ -1,0 +1,50 @@
+services:
+  # --- Flaskアプリケーションサービス ---
+  flask-app:
+    build:
+      context: .                  # Dockerfileのあるディレクトリ（プロジェクトルート）
+      dockerfile: Dockerfile
+    container_name: flask-app      # コンテナ名を固定（操作を簡単に）
+    volumes:
+      - ./geoapp:/app/geoapp        # Flaskアプリのソースコードをマウント（リアルタイム反映）
+    working_dir: /app              # コンテナ内の作業ディレクトリ（DockerfileのWORKDIRとも合わせる）
+    tty: true                      # コンテナに仮想端末（TTY）を付与（Ctrl+Cでの終了が正しくできる）
+    ports:
+      - "8000:5000"                # ホスト8000→コンテナ内5000へ転送（Flask標準ポート）
+    env_file:
+      - ./geoapp/.env.geoapp                # 環境変数ファイル読み込み（例：MongoDB Atlas接続情報）
+    command: ["/bin/sh", "/app/geoapp/entrypoint.sh", "flask", "run", "--host=0.0.0.0", "--port=5000"]
+    depends_on:
+      - map-ui                     # map-uiサービスが先に起動するまで待機
+
+  # --- フロントエンド（Vue3 + Vite）サービス ---
+  map-ui:
+    build:
+      context: ./frontend/map-ui   # map-uiのソースディレクトリ
+      dockerfile: Dockerfile
+    container_name: map-ui         # コンテナ名を固定
+    ports:
+      - "5173:5173"                # Viteの開発サーバポート
+    env_file:
+      - ./frontend/map-ui/.env.map-ui                # 環境変数ファイル読み込み（例：Cesium Ion接続情報）
+    volumes:
+      - ./frontend/map-ui:/app     # フロントエンドのソースコードをマウント（ホットリロード対応）
+    environment:
+      - NODE_ENV=development       # 開発モード設定
+      - CHOKIDAR_USEPOLLING=true   # ファイル変更をポーリングで検知
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0" #、「viteがない」問題を回避対応
+
+  # --- 3Dデータ変換サービス ---
+  #terrain-builder:
+  #  build:
+  #    context: .                   # `Dockerfile`のあるディレクトリ
+  #    dockerfile: Dockerfile
+  #  container_name: cesium-terrain-builder
+  #  volumes:
+  #    - ./geoapp:/app/geoapp       # 必要なソースコードをマウント（オプション）
+  #    - ./data/elevation:/app/data/elevation
+  #    - ./data/output:/app/data/output         # 出力フォルダ（必要に応じて作成）
+  #  working_dir: /app
+  #  tty: true
+  # #20250613  command: python -m cesium_terrain_builder.build  # cesium-terrain-builderの実行コマンド
+  #  command: ctb-tile -f Mesh -o /app/data/output /app/data/elevation/sample.tif

@@ -1,0 +1,61 @@
+html, body, #app {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: sans-serif;
+  }
+  
+  .cesium-viewer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+
+
+  .container {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  overflow: hidden;
+}
+
+.controller-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  background-color: #fff;
+  max-height: 100vh;
+}
+
+#cesiumContainer {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* 吹き出しスタイルのカスタムCSS */
+.cesium-label {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+  border: 2px solid #333 !important;
+}
+
+/* 仮ピン用の特別な吹き出しスタイル */
+.temp-pin-label {
+  background: linear-gradient(135deg, #ffff99 0%, #ffeb3b 100%) !important;
+  border: 2px solid #ff9800 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4) !important;
+  padding: 8px 12px !important;
+  font-weight: bold !important;
+  color: #333 !important;
+}
+
+  

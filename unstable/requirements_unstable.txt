@@ -1,0 +1,33 @@
+# Webアプリ系
+Flask==2.3.3
+python-dotenv==1.0.1  # .env読み込み用
+
+# MongoDB接続用
+pymongo==4.6.3
+dnspython==2.4.2  # MongoDB AtlasのSRV対応に必要
+
+# Geo系
+geopandas==0.14.3
+shapely==2.0.3
+geopy==2.4.1
+
+# 地図描画・可視化（Python側）
+folium==0.16.0
+
+# データ処理系（必要なら）
+pandas>=2.1.0
+numpy==1.26.4
+
+# Validation
+marshmallow==3.21.1
+
+# 開発用（必要に応じて）
+requests==2.31.0
+gunicorn==21.2.0  # Flask本番運用時（オプション）
+
+# Python 3.13 環境用：ビルド・Python 3.13対応用
+setuptools>=68.0.0
+Cython>=0.29
+
+# cesium-terrain-builder
+# git+https://github.com/geo-data/cesium-terrain-builder.git
